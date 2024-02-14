@@ -1,4 +1,5 @@
 
+
 fn main(){
     use std::time::{SystemTime, Duration};
     use chrono::{DateTime, Utc, TimeZone};
@@ -31,6 +32,8 @@ fn main(){
 
     
     let due_date = SystemTime::now() + Duration::from_secs(60 * 60 * 24 * 14); // 14 days from now
+
+    println!("{:?}", due_date);
 
     let book = Book {
         title: String::from("Rust Programming"),
