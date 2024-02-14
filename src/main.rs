@@ -1,59 +1,105 @@
 
+enum ContentType {
+    Heading(String),
+    Paragraph(String),
+    Link(String, String), // URL, Text
+}
 
-fn main(){
-    use std::time::{SystemTime, Duration};
-    use chrono::{DateTime, Utc, TimeZone};
+struct HtmlElement {
+    content_type: ContentType,
+}
 
-    enum BookStatus {
-        Available,
-        CheckedOut(SystemTime), // Due date
-        InRepair(String), // Notes on the repair
+impl HtmlElement {
+    fn new(content_type: ContentType) -> Self {
+        HtmlElement { content_type }
     }
-    
-    struct Book {
-        title: String,
-        status: BookStatus,
-    }
-    
 
-    fn display_book_status(book: &Book) {
-        match &book.status {
-            BookStatus::Available => println!("{} is available for borrowing.", book.title),
-            BookStatus::CheckedOut(due_date) => {
-                // Convert SystemTime to DateTime<Utc>
-                let datetime: DateTime<Utc> = due_date.clone().into();
-                // Format the DateTime<Utc> to a string
-                let formatted_date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
-                println!("{} is checked out. Due date: {}", book.title, formatted_date);
-            },
-            BookStatus::InRepair(notes) => println!("{} is in repair. Notes: {}", book.title, notes),
+    fn render(&self) -> String {
+        match &self.content_type {
+            ContentType::Heading(text) => format!("<h1>{}</h1>", text),
+            ContentType::Paragraph(text) => format!("<p>{}</p>", text),
+            ContentType::Link(href, text) => format!("<a href='{}'>{}</a>", href, text),
+        }
+    }
+}
+
+struct HtmlPage {
+    title: String,
+    elements: Vec<HtmlElement>,
+}
+
+impl HtmlPage {
+    fn new(title: String) -> Self {
+        HtmlPage {
+            title,
+            elements: Vec::new(),
         }
     }
 
-    
-    let due_date = SystemTime::now() + Duration::from_secs(60 * 60 * 24 * 14); // 14 days from now
-
-    println!("{:?}", due_date);
-
-    let book = Book {
-        title: String::from("Rust Programming"),
-        status: BookStatus::CheckedOut(due_date),
-    };
-
-    display_book_status(&book);
-    
-
+    fn add_element(&mut self, element: HtmlElement) {
+        self.elements.push(element);
     }
 
+    fn generate(&self) -> String {
+        let mut html = String::from("<!DOCTYPE html>\n<html>\n<head>\n");
+        html.push_str(&format!("<title>{}</title>\n", self.title));
+        html.push_str("</head>\n<body>\n");
 
-fn reading_from_console(){
-    use std::io;
+        for element in &self.elements {
+            html.push_str(&element.render());
+            html.push('\n');
+        }
 
-    println!("What's your favorite city?");
+        html.push_str("</body>\n</html>");
+        html
+    }
+}
 
-    let mut city = String::new();
-    io::stdin().read_line(&mut city).expect("Failed to read line");
 
-    println!("Your favorite city is: {}", city.trim());
+use std::fs::File;
+use std::io::{self, Write, stdin, stdout};
 
+fn read_user_input(prompt: &str) -> String {
+    let mut input = String::new();
+    println!("{}", prompt);
+    stdin().read_line(&mut input).expect("Failed to read line");
+    input.trim().to_string()
+}
+
+fn main() {
+    let mut page = HtmlPage::new(read_user_input("Enter the title of your page:"));
+    
+    loop {
+        println!("\nWhat would you like to add to your page?");
+        println!("1: Heading");
+        println!("2: Paragraph");
+        println!("3: Link");
+        println!("4: Generate Page and Exit");
+
+        let choice = read_user_input("Choose an option (1-4):");
+
+        match choice.as_str() {
+            "1" => {
+                let heading = read_user_input("Enter heading text:");
+                page.add_element(HtmlElement::new(ContentType::Heading(heading)));
+            },
+            "2" => {
+                let paragraph = read_user_input("Enter paragraph text:");
+                page.add_element(HtmlElement::new(ContentType::Paragraph(paragraph)));
+            },
+            "3" => {
+                let text = read_user_input("Enter link text:");
+                let url = read_user_input("Enter link URL:");
+                page.add_element(HtmlElement::new(ContentType::Link(url, text)));
+            },
+            "4" => break,
+            _ => println!("Invalid choice, please enter a number between 1 and 4."),
+        }
+    }
+
+    let html = page.generate();
+    let mut file = File::create("interactive_output.html").expect("Could not create file");
+    writeln!(file, "{}", html).expect("Could not write to file");
+
+    println!("HTML page generated successfully.");
 }
