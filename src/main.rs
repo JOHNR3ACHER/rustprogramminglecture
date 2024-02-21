@@ -1,36 +1,32 @@
 
 fn main() {
-    // Creating a vector
-    let mut nums: Vec<i32> = Vec::new();
-    nums.push(5);
-    nums.push(6);
-    nums.push(7);
-    nums.push(8);
+    use std::collections::HashMap;
 
-    // Accessing vector elements
-    if let Some(last) = nums.get(3) {
-        println!("Last element is {:?}", last);
-    }
-    
-    // Iterating over vector values
-    for num in &nums {
-        println!("Num: {}", num);
+    let mut populations: HashMap<String, i32> = HashMap::new();
+    populations.insert("UTRGV".to_string(), 30000);
+    populations.insert("Edinburg".to_string(), 97000);
+
+    // Accessing values
+    if let Some(pop) = populations.get("UTRGV") {
+        println!("UTRGV population: {}", pop);
     }
 
-    // // Using enums to store different types
-    // #[derive(Debug)]
-    // enum MyData {
-    //     Int(i32),
-    //     Text(String),
-    //     Vector(Vec<i32>),
-    // }
+    // Iterating over key-value pairs
+    for (key, value) in &populations {
+        println!("{}: {}", key, value);
+    }
 
-    // let mut mix: Vec<MyData> = Vec::new();
-    // mix.push(MyData::Int(100));
-    // mix.push(MyData::Text("Hello World".to_string()));
-    // mix.push(MyData::Vector(vec![1, 2, 5]));
+    // Updating a value
+    *populations.entry("UTRGV".to_string()).or_insert(0) = 45000;
+    println!("{:?}", populations);
 
-    // for elem in &mix {
-    //     println!("Element: {:?}", elem);
-    // }
+    // Word count example
+    let text = "hello world hello";
+    let mut word_count = HashMap::new();
+    for word in text.split_whitespace() {
+        let count = word_count.entry(word).or_insert(0);
+        *count += 1;
+    }
+    println!("{:?}", word_count);
+}
 }
