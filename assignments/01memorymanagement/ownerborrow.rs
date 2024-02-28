@@ -1,19 +1,18 @@
-
-
-
 pub fn is_five(x: &i32) -> bool {
-    // Your implementation goes here
+    // Implement this function
+    return *x==5;
 }
 
 
 fn swap(a: &mut i32, b: &mut i32) {
     // Implement this function
+    (*a,*b) = (*b,*a);
 }
-
 
 
 fn add_and_multiply(a: &i32, b: &mut i32) {
     // Implement this function
+    *b = (*a + *b) * 2; 
 }
 
 
@@ -48,4 +47,3 @@ mod tests {
         assert_eq!(b, 60); // (20 + 10) * 2
     }
 }
-
